@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alan The Alien</title>
+    <script type="text/javascript" src="JS/phaser.min.js"></script>
+    <script type="text/javascript" src="JS/boot.js"></script>
+    <script type="text/javascript" src="JS/preload.js"></script>
+    <script type="text/javascript" src="JS/title.js"></script>
+    <script type="text/javascript" src="JS/menu.js"></script>
+    <script type="text/javascript" src="JS/controls.js"></script>
+    <script type="text/javascript" src="JS/story.js"></script>
+    <script type="text/javascript" src="JS/story2.js"></script>
+    <script type="text/javascript" src="JS/game.js"></script>
+    <script type="text/javascript" src="JS/end.js"></script>
+
+</head>
+<body>
+
+<script>
+
+
+    var game = new Phaser.Game(1000,600, Phaser.AUTO,"game");
+    game.state.add("Boot",Boot);
+    game.state.add("Preload",Preload);
+    game.state.add("Title",Title);
+    game.state.add("Menu",Menu);
+    game.state.add("Controls",Controls);
+    game.state.add("Story",Story);
+    game.state.add("Game",Game);
+
+    game.state.start("Boot");
+</script>
+</body>
+</html>
