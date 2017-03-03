@@ -1,9 +1,10 @@
 /**
  * Created by B00251398 on 21/02/2017.
+ *
+ * Last Modified by B00272851 on 03/03/2017
  */
+
 var Game = function(game) {};
-
-
 
 Game.prototype = {
     preload :preload,
@@ -11,6 +12,7 @@ Game.prototype = {
     update: update
 
 };
+
 
 function preload(){
 
@@ -26,10 +28,8 @@ function preload(){
     game.load.image('emptyHeart', 'Assets/emptyHeart.png');
     game.load.image('snail', 'Assets/snail.png');
 
-
-
-
 }
+
 
 var player, bullets, jumpButton, leftButton, rightButton, pauseButton, magText, magTitle, reloadButton, shootButton, scoreTitle, alertText, platforms, pickups, scoreText, healthHud,
     healthHearts, heart1, heart2, heart3, snails, healthkits;
@@ -49,11 +49,7 @@ var shootLeft = -600;
 var playerDead = false;
 
 
-
-
 function create() {
-
-
 
     //score text and title is displayed on screen
     scoreText = game.add.text(80, 30, '' + score, {fontSize: '15px', fill: '#FF0000'});
@@ -79,8 +75,6 @@ function create() {
     magTitle.fixedToCamera = true;
     magText.fixedToCamera = true;
     alertText.fixedToCamera = true;
-
-
 
     //create text that informs the player they have died
 
@@ -112,21 +106,16 @@ function create() {
     pickup3.body.gravity.y = 100;
     pickup3.body.bounce.y = 0.3
 
-    snails = game.add.group();
-    snails.enableBody = true;
-    var snail1 = snails.create(200, 500,'snail');
-    snail1.body.gravity.y = 100;
-    var snail2 = snails.create(500, 500,'snail');
-    snail2.body.gravity.y = 100;
-    var snail3 = snails.create(700, 500,'snail');
-    snail3.body.gravity.y = 100;
+    //create the snail array - gives more flexability to the AI than the group
+    snails = [];
+    snails.push(new Snail(game.add.sprite(200, 500,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(500, 350,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(700, 500,'snail'), "left"));
 
     healthkits = game.add.group();
     healthkits.enableBody = true;
     var kit1 = healthkits.create(350, 100,'fullHeart');
     kit1.body.gravity.y = 100;
-
-
 
     //player settings
     player = game.add.sprite(32, 200, 'player');
@@ -139,7 +128,6 @@ function create() {
 
     player.animations.add('right', [0, 1], 10, true);
     player.animations.add('left', [3, 4], 10, true);
-
 
     // player input
     jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
@@ -157,19 +145,13 @@ function create() {
     bullets.createMultiple(10, 'bullet');
     bullets.setAll('checkWorldBounds', true);
     bullets.setAll('outOfBoundsKill', true);
-
-
 }
+
 
 function update() {
 
-
-
     game.physics.arcade.collide(pickups, platforms);
-    game.physics.arcade.collide(snails, platforms);
     game.physics.arcade.collide(healthkits, platforms);
-
-
 
     var touchPlatform = game.physics.arcade.collide(player, platforms);
     game.physics.arcade.overlap(player, pickups, function killPickups(player,pickup) {
@@ -180,18 +162,9 @@ function update() {
     game.physics.arcade.collide(bullets, platforms, function killBullets(bullet) {
         bullet.kill();
     });
-    game.physics.arcade.collide(bullets, snails, function killSnails(bullet,snails) {
-        bullet.kill();
-        snails.kill();
-        score += 50;
-        scoreText.text = '' + score;
-    });
-    game.physics.arcade.collide(player, snails, function hurtPlayer(player, snails) {
-        player.body.velocity.x = -150;
-        player.body.velocity.y = -150;
-        health -= 10;
-        snails.kill();
-    });
+
+    updateEnemies();
+
     game.physics.arcade.collide(player, healthkits, function (player, healthkit) {
 
         healthkit.kill();
@@ -202,7 +175,6 @@ function update() {
         }
 
     });
-
 
     if(health == 60){
         heart1.loadTexture('fullHeart');
@@ -234,11 +206,6 @@ function update() {
         heart3.loadTexture('emptyHeart');
         killPlayer();
     }
-
-
-
-
-
 
     player.body.velocity.x = 0;
 
@@ -288,11 +255,7 @@ function update() {
 
         killPlayer();
     }
-
-
-
 }
-
 
 // function allows the player to shoot if they have bullets in their magazine. Will also play shooting sound and update the ammo count
 function playerFires(shoot) {
@@ -315,7 +278,6 @@ function playerFires(shoot) {
         //sound in here
         game.time.events.add(Phaser.Timer.SECOND * 1, playNoBullets, this);
     }
-
 }
 
 // this function creates a delay before calling the reload function. This function also prevents the player from shooting when they are reloading their weapon
@@ -327,8 +289,6 @@ function reloadBreak() {
         //sound in here
         game.time.events.add(Phaser.Timer.SECOND * 1, reloadWeapon, this);
     }
-
-
 }
 
 // this function resets the bullets back to 10, changes the text to the 10 bullets and allows the player to fire
@@ -336,7 +296,6 @@ function reloadWeapon() {
     mag = 10;
     magText.text = '' + mag;
     allowShoot = true;
-
 }
 
 // this function pauses the game
@@ -365,5 +324,158 @@ function respawnPlayer(x,y) {
     player.revive();
     playerDead = false;
     health = 60;
-
 }
+
+function updateEnemies() {
+    //update the snails
+    for(var i = 0; i < snails.length; i++){
+        //move the snail
+        snails[i].move();
+
+        //check collisions
+        score += snails[i].checkBulletCollision();
+
+        //check player collision
+        if(snails[i].isAlive() == true) snails[i].checkPlayerCollision();
+
+    }//next snail
+
+    //update the score
+    scoreText.text = '' + score;
+
+    //now that it is out of the loop remove the dead snails
+    for(var i = snails.length -1; i >= 0; i--){
+        //if snail is dead remove it
+        if(snails[i].isAlive() == false){
+            snails.splice(i, 1);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Snail class and functions
+
+//constructor and data storage
+function Snail(sprite, direction, speed)
+{
+    //add the variables
+    this.sprite = sprite; //snail sprite
+    this.direction = direction; //snail direction
+    this.oldDirection = direction; //oldDirection is used to flip the image
+
+    this.state = "patrol"; //will be used for adding a random behaviour to it
+    this.scoreVaulue = 50; //how much the enemy is worth when killed
+    this.health = 2; //health of the enemy
+    this.alive = true; //true = alive, false = dead
+    this.gravity = 100; //used to allow the snail to fall
+    this.oldDirection = direction;
+
+    //setup other values - physics stuff
+    game.physics.arcade.enable(this.sprite);
+    this.sprite.body.gravity.y = this.gravity;
+
+    //sprite stuff
+    this.sprite.anchor.setTo(0.5,0.5);
+    //check direction - flip for enemies going right
+    if(this.direction == 'right') this.sprite.scale.x *= -1;
+}
+
+//returns the snails game.body. Used for collision detection
+Snail.prototype.getSprite = function()
+{
+    return this.sprite;
+};
+
+//returns true if snail is alive
+Snail.prototype.isAlive = function() {
+    return this.alive;
+}
+
+//damages the snail// returns score if killed
+Snail.prototype.takeDamage = function() {
+    this.health = this.health - 1;
+    //if the snail has 0 or less health it's dead
+    if(this.health <= 0){
+        this.alive = false; //set to false
+        this.sprite.kill(); //kill the sprite
+        return this.scoreVaulue; //return the score value
+    }
+    return 0; //not killed, no score increase
+}
+
+//snail is a basic enemy that does'nt react to the player
+Snail.prototype.move = function()
+{
+    var collided;//variable to hold if collision with platform happened
+    var i = -1;//ensure starts at 0
+
+    //loop finds the platform that the snail is on if on any
+    do{
+        i++;//increment i
+        collided = game.physics.arcade.collide(this.sprite, platforms.children[i]); //check for collision
+    } while(i < platforms.children.length && collided == false); //only exit when collision happened or no more platforms
+
+    //if direction is left move left
+    if(collided == true) {
+        if (this.direction == 'left') {
+            this.sprite.body.velocity.x = -30;
+
+        } else {
+            //else move right
+            this.sprite.body.velocity.x = 30;
+        }
+    }
+
+    //if the direction changes flip the image
+    if(this.direction != this.oldDirection) {
+        this.sprite.scale.x *= -1; //flip the image horizontally
+        this.oldDirection = this.direction; //set old direction to direction
+    }
+
+    //if snail goes off screen at the bottom kill it
+    if( this.sprite.position >= 600 ){
+        this.alive = false;
+        this.sprite.Kill();
+    }
+};
+
+//returns the score if the snail is dead
+Snail.prototype.checkBulletCollision = function(){
+    var score = 0;
+    //check the collision of the snail with each bullet
+    for(var j = bullets.children.length; j >= 0; j--)
+    {
+        //no point checking if the snail is dead
+        if(this.alive == true) {
+            //check collision
+            if (game.physics.arcade.collide(bullets.children[j], this.sprite)) {
+                //if collided kill the bullet
+                bullets.children[j].kill();
+                //snail takes damage //return damage
+                score = this.takeDamage();
+
+            }
+        }
+    }
+    return score;
+};
+
+Snail.prototype.checkPlayerCollision = function (){
+    //check collision
+    if (game.physics.arcade.collide(player, this.sprite)) {
+        //bounce the player back
+        player.body.velocity.x = -150;
+        player.body.velocity.y = -150;
+
+        //lower the health of the player
+        health -= 10;
+
+        //no score if snail dies after touching player
+        this.takeDamage();
+    }//end if
+};
+
+//end of Snail class
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
