@@ -17,6 +17,7 @@ Game.prototype = {
 function preload(){
 
     game.load.spritesheet('player', 'Assets/Alan.png', 22, 21);
+    game.load.image('exit', 'Assets/exit.png');
     game.load.image('bullet', 'Assets/Bullet.png');
     game.load.image('mag', 'Text/Mag.png');
     game.load.image('scoreTitle', 'Text/scoreTitle.png');
@@ -31,8 +32,8 @@ function preload(){
 }
 
 
-var player, bullets, jumpButton, leftButton, rightButton, pauseButton, magText, magTitle, reloadButton, shootButton, scoreTitle, alertText, platforms, pickups, scoreText, healthHud,
-    healthHearts, heart1, heart2, heart3, snails, healthkits;
+var player, bullets, jumpButton, leftButton, rightButton, pauseButton, magText, magTitle, reloadButton, shootButton, scoreTitle, alertText, pickups, scoreText, healthHud,
+    healthHearts, heart1, heart2, heart3, snails, healthkit, map, map2, backmap, layer, layer2, backgroundLayer1, exit;
 
 var fireRate = 100;
 var nextFire = 0;
@@ -47,9 +48,94 @@ var shootRight = 600;
 var aimLeft = false;
 var shootLeft = -600;
 var playerDead = false;
+var playingLevel1 = true;
+var playingLevel2 = false;
 
 
 function create() {
+
+    game.stage.backgroundColor = "#c4daff";
+
+    map = game.add.tilemap('level1');
+    map.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    map2 = game.add.tilemap('level2');
+    map2.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    backmap = game.add.tilemap('back');
+    backmap.addTilesetImage('backgrounds', 'backgrounds');
+
+    layer2 = map2.createLayer('Foreground');
+    backgroundLayer1 = backmap.createLayer('Background');
+    layer = map.createLayer('Foreground');
+    layer.resizeWorld();
+
+    map.setCollisionBetween(0,150);
+    map.setCollisionBetween(154,199);
+    map.setCollisionBetween(205,233);
+
+    //physics system is enabled and the player is created anf given attributes such as gravity and bounce
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+
+
+    pickups = game.add.group();
+    pickups.enableBody = true;
+    var pickup1 = pickups.create(85, 0,'pickup');
+    pickup1.body.gravity.y = 100;
+    pickup1.body.bounce.y = 0.3
+    var pickup2 = pickups.create(500, 0,'pickup');
+    pickup2.body.gravity.y = 100;
+    pickup2.body.bounce.y = 0.3
+    var pickup3 = pickups.create(1900, 200,'pickup');
+    pickup3.body.gravity.y = 100;
+    pickup3.body.bounce.y = 0.3
+
+   /* //create the snail array - gives more flexability to the AI than the group
+    snails = [];
+    snails.push(new Snail(game.add.sprite(200, 500,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(500, 350,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(700, 500,'snail'), "left"));*/
+
+    healthkit = game.add.sprite(400, 32, 'fullHeart');
+    game.physics.arcade.enable(healthkit);
+    healthkit.enableBody = true;
+    healthkit.body.gravity.y = 100;
+
+
+    //player settings
+    player = game.add.sprite(1900, 30, 'player');
+    game.physics.arcade.enable(player);
+    player.body.bounce.setTo(0.2);
+    player.body.gravity.setTo(0, 100);
+    player.body.collideWorldBounds = true;
+    //makes the camera follow the player
+    game.camera.follow(player);
+
+    exit = game.add.sprite(2050, 32, 'exit');
+    game.physics.arcade.enable(exit);
+    exit.body.gravity.setTo(0, 100);
+
+    player.animations.add('right', [0, 1], 10, true);
+    player.animations.add('left', [3, 4], 10, true);
+
+    // player input
+    jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    leftButton = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    rightButton = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    shootButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+    pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
+    reloadButton = game.input.keyboard.addKey(Phaser.Keyboard.R);
+
+    // create bullet group for the player to shoot with
+    bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+    bullets.createMultiple(10, 'bullet');
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('outOfBoundsKill', true);
+
 
     //score text and title is displayed on screen
     scoreText = game.add.text(80, 30, '' + score, {fontSize: '15px', fill: '#FF0000'});
@@ -78,94 +164,52 @@ function create() {
 
     //create text that informs the player they have died
 
-    //physics system is enabled and the player is created anf given attributes such as gravity and bounce
-    game.physics.startSystem(Phaser.Physics.ARCADE);
 
-    //  The platforms group contains the ground and the 2 ledges we can jump on
-    platforms = game.add.group();
-
-    //  We will enable physics for any object that is created in this group
-    platforms.enableBody = true;
-
-    var ground =  platforms.create(0, 550,'floor');
-    ground.body.immovable = true;
-    var ground2 =  platforms.create(600, 550, 'floor');
-    ground2.body.immovable = true;
-    var platform = platforms.create(350, 400, 'floor');
-    platform.body.immovable = true;
-
-    pickups = game.add.group();
-    pickups.enableBody = true;
-    var pickup1 = pickups.create(100, 0,'pickup');
-    pickup1.body.gravity.y = 100;
-    pickup1.body.bounce.y = 0.3
-    var pickup2 = pickups.create(400, 0,'pickup');
-    pickup2.body.gravity.y = 100;
-    pickup2.body.bounce.y = 0.3
-    var pickup3 = pickups.create(800, 0,'pickup');
-    pickup3.body.gravity.y = 100;
-    pickup3.body.bounce.y = 0.3
-
-    //create the snail array - gives more flexability to the AI than the group
-    snails = [];
-    snails.push(new Snail(game.add.sprite(200, 500,'snail'), "left"));
-    snails.push(new Snail(game.add.sprite(500, 350,'snail'), "right"));
-    snails.push(new Snail(game.add.sprite(700, 500,'snail'), "left"));
-
-    healthkits = game.add.group();
-    healthkits.enableBody = true;
-    var kit1 = healthkits.create(350, 100,'fullHeart');
-    kit1.body.gravity.y = 100;
-
-    //player settings
-    player = game.add.sprite(32, 200, 'player');
-    game.physics.arcade.enable(player);
-    player.body.bounce.setTo(0.2);
-    player.body.gravity.setTo(0, 200);
-    player.body.collideWorldBounds = true;
-    //makes the camera follow the player
-    game.camera.follow(player);
-
-    player.animations.add('right', [0, 1], 10, true);
-    player.animations.add('left', [3, 4], 10, true);
-
-    // player input
-    jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
-    leftButton = game.input.keyboard.addKey(Phaser.Keyboard.A);
-    rightButton = game.input.keyboard.addKey(Phaser.Keyboard.D);
-    shootButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-    pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
-    reloadButton = game.input.keyboard.addKey(Phaser.Keyboard.R);
-
-    // create bullet group for the player to shoot with
-    bullets = game.add.group();
-    bullets.enableBody = true;
-    bullets.physicsBodyType = Phaser.Physics.ARCADE;
-
-    bullets.createMultiple(10, 'bullet');
-    bullets.setAll('checkWorldBounds', true);
-    bullets.setAll('outOfBoundsKill', true);
 }
 
 
 function update() {
 
-    game.physics.arcade.collide(pickups, platforms);
-    game.physics.arcade.collide(healthkits, platforms);
 
-    var touchPlatform = game.physics.arcade.collide(player, platforms);
-    game.physics.arcade.overlap(player, pickups, function killPickups(player,pickup) {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //all collision code is detailed in this section of code
+    //level 1 specific code
+    game.physics.arcade.collide(player, layer);
+    game.physics.arcade.collide(healthkit, layer);
+    game.physics.arcade.collide(pickups, layer);
+    game.physics.arcade.collide(exit, layer);
+
+    game.physics.arcade.collide(bullets, layer, function (bullets) {
+
+        bullets.kill();
+    });
+
+    game.physics.arcade.collide(player, exit, function () {
+        level2();
+    });
+
+    //level 2 specific code////////////////////////////////////////////////////////////////////
+    game.physics.arcade.collide(player, layer2);
+    game.physics.arcade.collide(healthkit, layer2);
+    game.physics.arcade.collide(pickups, layer2);
+    game.physics.arcade.collide(exit, layer2);
+
+    game.physics.arcade.collide(bullets, layer, function (bullets) {
+
+        bullets.kill();
+    });
+
+    //general collision code
+    game.physics.arcade.overlap(player, pickups, function (player, pickup) {
+
+        pickup.kill();
         score += 100;
         scoreText.text = '' + score;
-        pickup.kill();
-    });
-    game.physics.arcade.collide(bullets, platforms, function killBullets(bullet) {
-        bullet.kill();
+
     });
 
-    updateEnemies();
-
-    game.physics.arcade.collide(player, healthkits, function (player, healthkit) {
+    game.physics.arcade.overlap(player, healthkit, function (player, healthkit) {
 
         healthkit.kill();
         if(health < 40){
@@ -176,65 +220,43 @@ function update() {
 
     });
 
-    if(health == 60){
-        heart1.loadTexture('fullHeart');
-        heart2.loadTexture('fullHeart');
-        heart3.loadTexture('fullHeart');
-    }else if(health == 50){
-        heart1.loadTexture('fullHeart');
-        heart2.loadTexture('fullHeart');
-        heart3.loadTexture('halfHeart');
-    }else if (health == 40){
-        heart1.loadTexture('fullHeart');
-        heart2.loadTexture('fullHeart');
-        heart3.loadTexture('emptyHeart');
-    }else if(health == 30){
-        heart1.loadTexture('fullHeart');
-        heart2.loadTexture('halfHeart');
-        heart3.loadTexture('emptyHeart');
-    }else if (health == 20){
-        heart1.loadTexture('fullHeart');
-        heart2.loadTexture('emptyHeart');
-        heart3.loadTexture('emptyHeart');
-    }else if(health == 10){
-        heart1.loadTexture('halfHeart');
-        heart2.loadTexture('emptyHeart');
-        heart3.loadTexture('emptyHeart');
-    }else{
-        heart1.loadTexture('emptyHeart');
-        heart2.loadTexture('emptyHeart');
-        heart3.loadTexture('emptyHeart');
-        killPlayer();
-    }
 
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //reset the players velocity to zero so that one key press doesn't move the player constantly in the direction pressed
     player.body.velocity.x = 0;
+    // updateEnemies();
+    //checks if the player has enough health to live
+    checkHealth();
 
     // calls reload function when r is pressed
     reloadButton.onDown.add(reloadBreak, this);
     // calls pause function when p is pressed
     pauseButton.onDown.add(pauseFunction, this);
 
-    // Player Movement left right and jumping
+    // Player Movement left, right and jumping
     if (leftButton.isDown) {
         //  Move the player to the left
-        player.body.velocity.x = -150;
+        player.body.velocity.x = -100;
         aimLeft = true;
         aimRight = false;
         player.animations.play('left');
     }
     else if (rightButton.isDown) {
         //  Move the player to the right
-        player.body.velocity.x = 150;
+        player.body.velocity.x = 100;
         aimRight = true;
         aimLeft = false
         player.animations.play('right');
     }else{
         player.frame = 2;
     }
-
-    if (jumpButton.isDown && player.body.touching.down  && touchPlatform == true) {
-        // allow the player to jump if they are touching the ground
-        player.body.velocity.y = -250;
+    if (jumpButton.isDown && player.body.onFloor()) {
+        player.body.velocity.y = -125;
     }
 
 
@@ -250,11 +272,18 @@ function update() {
         playerFires(shootLeft)
     }
 
-    // kills the player if the have fallen off the map limits
-    if (player.y > 550){
-
-        killPlayer();
+    //kills the player if the fall off the bottom of the map this code is specific to each level
+    if(playingLevel1 == true){
+    if (player.y > 500){
+        killPlayer(32,300);
     }
+    }else if (playingLevel2 == true){
+        if(player.y> 950){
+            killPlayer(32,50)
+        }
+    }
+
+
 }
 
 // function allows the player to shoot if they have bullets in their magazine. Will also play shooting sound and update the ammo count
@@ -308,24 +337,79 @@ function playNoBullets(){
     allowNoBullets = true;
 }
 
-function killPlayer() {
+//this fucntion kills the player sprite siaplays a message and calls the respawn function
+function killPlayer(x,y) {
     playerDead = true;
     player.kill();
-    game.time.events.add(Phaser.Timer.SECOND * 5, respawnPlayer, this, 32, 400);
+    game.time.events.add(Phaser.Timer.SECOND * 1, respawnPlayer, this, x, y);
 
-    alertText.text = "You Died, You will Respawn in 3 seconds"
+    alertText.text = "You Died"
 }
 
+//respawns the player in the correct position and gives them full health
 function respawnPlayer(x,y) {
     alertText.text = "";
-    score =- 100;
-    scoreText.text = "" + score;
     player.reset(x,y);
     player.revive();
     playerDead = false;
     health = 60;
+    mag = 10;
+    magText.text = '' + mag
+
 }
 
+
+function checkHealth() {
+    if(health == 60){
+        heart1.loadTexture('fullHeart');
+        heart2.loadTexture('fullHeart');
+        heart3.loadTexture('fullHeart');
+    }else if(health == 50){
+        heart1.loadTexture('fullHeart');
+        heart2.loadTexture('fullHeart');
+        heart3.loadTexture('halfHeart');
+    }else if (health == 40){
+        heart1.loadTexture('fullHeart');
+        heart2.loadTexture('fullHeart');
+        heart3.loadTexture('emptyHeart');
+    }else if(health == 30){
+        heart1.loadTexture('fullHeart');
+        heart2.loadTexture('halfHeart');
+        heart3.loadTexture('emptyHeart');
+    }else if (health == 20){
+        heart1.loadTexture('fullHeart');
+        heart2.loadTexture('emptyHeart');
+        heart3.loadTexture('emptyHeart');
+    }else if(health == 10){
+        heart1.loadTexture('halfHeart');
+        heart2.loadTexture('emptyHeart');
+        heart3.loadTexture('emptyHeart');
+    }else{
+        heart1.loadTexture('emptyHeart');
+        heart2.loadTexture('emptyHeart');
+        heart3.loadTexture('emptyHeart');
+        killPlayer();
+    }
+
+}
+
+
+function level2() {
+    layer.kill();
+    backgroundLayer1.kill();
+    layer2.resizeWorld();
+    player.reset(32,50);
+    healthkit.reset(500,10);
+    playingLevel1 = false;
+    playingLevel2 = true;
+
+    map2.setCollisionBetween(0,150);
+    map2.setCollisionBetween(154,199);
+    map2.setCollisionBetween(205,233);
+
+}
+
+/*
 function updateEnemies() {
     //update the snails
     for(var i = 0; i < snails.length; i++){
@@ -350,10 +434,11 @@ function updateEnemies() {
             snails.splice(i, 1);
         }
     }
-}
+}*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 //Snail class and functions
 
 //constructor and data storage
@@ -475,6 +560,7 @@ Snail.prototype.checkPlayerCollision = function (){
         this.takeDamage();
     }//end if
 };
+*/
 
 //end of Snail class
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

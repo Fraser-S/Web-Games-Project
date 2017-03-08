@@ -29,6 +29,12 @@ Preload.prototype = {
         this.game.load.image("story2", "Text/story2.png");
         this.game.load.image("story3", "Text/story3.png");
 
+        game.load.tilemap('level1', 'Assets/ATAlevel1.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('level2', 'Assets/ATAlevel2.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('back', 'Assets/background1.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.image('tiles', 'Assets/AlanSpriteSheet.png');
+        game.load.image('backgrounds', 'Assets/backgrounds.png')
+
 
 
     },
