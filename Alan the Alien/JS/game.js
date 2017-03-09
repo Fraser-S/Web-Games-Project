@@ -28,12 +28,14 @@ function preload(){
     game.load.image('halfHeart', 'Assets/halfHeart.png');
     game.load.image('emptyHeart', 'Assets/emptyHeart.png');
     game.load.image('snail', 'Assets/snail.png');
+    game.load.image('spikes', 'Assets/spikes.png');
 
 }
 
 
 var player, bullets, jumpButton, leftButton, rightButton, pauseButton, magText, magTitle, reloadButton, shootButton, scoreTitle, alertText, pickups, scoreText, healthHud,
-    healthHearts, heart1, heart2, heart3, snails, healthkit, map, map2, backmap, layer, layer2, backgroundLayer1, exit;
+    healthHearts, heart1, heart2, heart3, snails, healthkit, map, map2, map3, map4, backmap, backmap2, backmap3, backmap4, layer, layer2, layer3, layer4,
+    backgroundLayer1, backgroundLayer2, backgroundLayer3, backgroundLayer4, exit1, exit2, exit3, spikes;
 
 var fireRate = 100;
 var nextFire = 0;
@@ -50,11 +52,16 @@ var shootLeft = -600;
 var playerDead = false;
 var playingLevel1 = true;
 var playingLevel2 = false;
+var playingLevel3 = false;
+var playingLevel4 = false;
+var checkpoint1 = false;
+var checkpoint2 = false;
+var checkpoint3 = false;
 
 
 function create() {
 
-    game.stage.backgroundColor = "#c4daff";
+    game.stage.backgroundColor = "#000000";
 
     map = game.add.tilemap('level1');
     map.addTilesetImage('AlanSpriteSheet', 'tiles');
@@ -62,9 +69,32 @@ function create() {
     map2 = game.add.tilemap('level2');
     map2.addTilesetImage('AlanSpriteSheet', 'tiles');
 
-    backmap = game.add.tilemap('back');
+    map3 = game.add.tilemap('level3');
+    map3.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    map4 = game.add.tilemap('bossLevel');
+    map4.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+
+
+    backmap = game.add.tilemap('back1');
     backmap.addTilesetImage('backgrounds', 'backgrounds');
 
+    backmap2 = game.add.tilemap('back2');
+    backmap2.addTilesetImage('backgrounds', 'backgrounds');
+
+    backmap3 = game.add.tilemap('back3');
+    backmap3.addTilesetImage('backgrounds', 'backgrounds');
+
+    backmap4 = game.add.tilemap('bossBack');
+    backmap4.addTilesetImage('backgrounds', 'backgrounds');
+
+
+    backgroundLayer4 = backmap4.createLayer('Background');
+    layer4 = map4.createLayer('Foreground');
+    backgroundLayer3 = backmap3.createLayer('Background');
+    layer3 = map3.createLayer('Foreground');
+    backgroundLayer2 = backmap2.createLayer('Background');
     layer2 = map2.createLayer('Foreground');
     backgroundLayer1 = backmap.createLayer('Background');
     layer = map.createLayer('Foreground');
@@ -76,7 +106,6 @@ function create() {
 
     //physics system is enabled and the player is created anf given attributes such as gravity and bounce
     game.physics.startSystem(Phaser.Physics.ARCADE);
-
 
 
     pickups = game.add.group();
@@ -102,9 +131,12 @@ function create() {
     healthkit.enableBody = true;
     healthkit.body.gravity.y = 100;
 
+    spikes = game.add.sprite(987, 300, 'spikes');
+    game.physics.arcade.enable(spikes);
+    spikes.body.gravity.setTo(0, 100);
 
     //player settings
-    player = game.add.sprite(1900, 30, 'player');
+    player = game.add.sprite(1900, 50, 'player');
     game.physics.arcade.enable(player);
     player.body.bounce.setTo(0.2);
     player.body.gravity.setTo(0, 100);
@@ -112,9 +144,9 @@ function create() {
     //makes the camera follow the player
     game.camera.follow(player);
 
-    exit = game.add.sprite(2050, 32, 'exit');
-    game.physics.arcade.enable(exit);
-    exit.body.gravity.setTo(0, 100);
+    exit1 = game.add.sprite(2050, 32, 'exit');
+    game.physics.arcade.enable(exit1);
+    exit1.body.gravity.setTo(0, 100);
 
     player.animations.add('right', [0, 1], 10, true);
     player.animations.add('left', [3, 4], 10, true);
@@ -178,14 +210,15 @@ function update() {
     game.physics.arcade.collide(player, layer);
     game.physics.arcade.collide(healthkit, layer);
     game.physics.arcade.collide(pickups, layer);
-    game.physics.arcade.collide(exit, layer);
+    game.physics.arcade.collide(exit1, layer);
 
     game.physics.arcade.collide(bullets, layer, function (bullets) {
 
         bullets.kill();
     });
 
-    game.physics.arcade.collide(player, exit, function () {
+    game.physics.arcade.overlap(player, exit1, function () {
+        exit1.kill();
         level2();
     });
 
@@ -193,14 +226,48 @@ function update() {
     game.physics.arcade.collide(player, layer2);
     game.physics.arcade.collide(healthkit, layer2);
     game.physics.arcade.collide(pickups, layer2);
-    game.physics.arcade.collide(exit, layer2);
+    game.physics.arcade.collide(exit2, layer2);
+    game.physics.arcade.collide(spikes, layer2);
 
-    game.physics.arcade.collide(bullets, layer, function (bullets) {
+    game.physics.arcade.collide(bullets, layer2, function (bullets) {
 
         bullets.kill();
     });
 
-    //general collision code
+    game.physics.arcade.overlap(player, exit2, function () {
+        exit2.kill();
+        level3();
+    });
+
+
+
+    //Level 3///////////////////////////////////////////////////////////////////////////////////
+    game.physics.arcade.collide(player, layer3);
+    game.physics.arcade.collide(healthkit, layer3);
+    game.physics.arcade.collide(pickups, layer3);
+    game.physics.arcade.collide(spikes, layer3);
+    game.physics.arcade.collide(exit3, layer3);
+
+    game.physics.arcade.collide(bullets, layer3, function (bullets) {
+
+        bullets.kill();
+    });
+
+    game.physics.arcade.overlap(player, exit3, function () {
+        exit3.kill();
+        level4();
+    });
+
+    //Boss level/////////////////////////////////////////////////////////////////////////////////////
+    game.physics.arcade.collide(player, layer4);
+
+    game.physics.arcade.collide(bullets, layer4, function (bullets) {
+
+        bullets.kill();
+    });
+
+
+    //general collision code///////////////////////////////////////////////////////////////////////////////
     game.physics.arcade.overlap(player, pickups, function (player, pickup) {
 
         pickup.kill();
@@ -274,12 +341,42 @@ function update() {
 
     //kills the player if the fall off the bottom of the map this code is specific to each level
     if(playingLevel1 == true){
-    if (player.y > 500){
-        killPlayer(32,300);
+
+        if(player.x > 1000){
+            checkpoint1 = true;
+        }
+
+        if (player.y > 540 && checkpoint1 == false){
+        killPlayer(32,400);
+        }else if (player.y > 540 && checkpoint1 == true){
+        killPlayer(1000,400)
+        }
     }
-    }else if (playingLevel2 == true){
-        if(player.y> 950){
+
+    else if (playingLevel2 == true){
+
+        if(player.x > 1659 && player.y> 735){
+            checkpoint2 = true;
+        }
+
+
+        if(player.y> 960 && checkpoint2 == false){
             killPlayer(32,50)
+        }else if (player.y > 960 && checkpoint2 == true){
+            killPlayer(1660,700)
+        }
+    }
+
+    if(playingLevel3 == true){
+
+        if(player.x > 777){
+            checkpoint3 = true;
+        }
+
+        if (player.y > 540 && checkpoint3 == false){
+            killPlayer(32,32);
+        }else if (player.y > 540 && checkpoint3 == true){
+            killPlayer(777,400)
         }
     }
 
@@ -337,7 +434,7 @@ function playNoBullets(){
     allowNoBullets = true;
 }
 
-//this fucntion kills the player sprite siaplays a message and calls the respawn function
+//this function kills the player sprite displays a message and calls the respawn function
 function killPlayer(x,y) {
     playerDead = true;
     player.kill();
@@ -358,7 +455,7 @@ function respawnPlayer(x,y) {
 
 }
 
-
+//checks the health of the player can changes the health hud to show the players health
 function checkHealth() {
     if(health == 60){
         heart1.loadTexture('fullHeart');
@@ -388,26 +485,119 @@ function checkHealth() {
         heart1.loadTexture('emptyHeart');
         heart2.loadTexture('emptyHeart');
         heart3.loadTexture('emptyHeart');
-        killPlayer();
+
+        if(playingLevel1 == true){
+            if(checkpoint1 == true) {
+            killPlayer(1000, 400);
+            }else{
+            killPlayer(32,350);
+            }
+        }else if(playingLevel2 == true){
+            if(checkpoint2 == true) {
+                killPlayer(1660, 700);
+            }else{
+                killPlayer(32,50);
+            }
+        }else if(playingLevel3 == true){
+            if(checkpoint3 == true) {
+                killPlayer(777, 400);
+            }else{
+                killPlayer(32,50);
+            }
+        }else if(playingLevel4 == true){
+            killPlayer(32,50);
+        }
+
+
     }
 
 }
 
-
+//this function sets level 2 up so that the player can play it
 function level2() {
     layer.kill();
     backgroundLayer1.kill();
     layer2.resizeWorld();
-    player.reset(32,50);
-    healthkit.reset(500,10);
+    player.reset(60,350);
+    healthkit.reset(1600,400);
     playingLevel1 = false;
     playingLevel2 = true;
+    playingLevel3 = false;
+    pickups.destroy();
+    pickups = game.add.group();
+    pickups.enableBody = true;
+    var pickup1 = pickups.create(700, 400,'pickup');
+    pickup1.body.gravity.y = 100;
+    pickup1.body.bounce.y = 0.3
+
+    exit2 = game.add.sprite(12, 350, 'exit');
+    game.physics.arcade.enable(exit2);
+    exit2.body.gravity.setTo(0, 100);
 
     map2.setCollisionBetween(0,150);
     map2.setCollisionBetween(154,199);
     map2.setCollisionBetween(205,233);
 
 }
+
+//this function sets level 3 up so that the player can play it
+function level3() {
+    layer2.kill();
+    backgroundLayer2.kill();
+    layer3.resizeWorld();
+
+    player.reset(1900,50);
+
+    healthkit.reset(1000,50);
+
+    playingLevel1 = false;
+    playingLevel2 = false;
+    playingLevel3 = true;
+
+    pickups.destroy();
+    pickups = game.add.group();
+    pickups.enableBody = true;
+
+    var pickup1 = pickups.create(75, 150,'pickup');
+    pickup1.body.gravity.y = 100;
+    pickup1.body.bounce.y = 0.3
+
+    exit3 = game.add.sprite(2000, 450, 'exit');
+    game.physics.arcade.enable(exit3);
+    exit3.body.gravity.setTo(0, 100);
+
+    map3.setCollisionBetween(0,150);
+    map3.setCollisionBetween(154,199);
+    map3.setCollisionBetween(205,233);
+
+}
+
+function level4() {
+    layer3.kill();
+    backgroundLayer3.kill();
+    layer4.resizeWorld();
+
+    player.reset(32,50);
+
+    healthkit.reset(1000,50);
+
+    playingLevel1 = false;
+    playingLevel2 = false;
+    playingLevel3 = false;
+    playingLevel4 = true;
+
+    pickups.destroy();
+    pickups = game.add.group();
+    pickups.enableBody = true;
+
+    map4.setCollisionBetween(0,150);
+    map4.setCollisionBetween(154,199);
+    map4.setCollisionBetween(205,233);
+
+}
+
+
+
 
 /*
 function updateEnemies() {

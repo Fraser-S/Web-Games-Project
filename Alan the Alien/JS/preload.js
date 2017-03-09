@@ -31,7 +31,12 @@ Preload.prototype = {
 
         game.load.tilemap('level1', 'Assets/ATAlevel1.json', null, Phaser.Tilemap.TILED_JSON);
         game.load.tilemap('level2', 'Assets/ATAlevel2.json', null, Phaser.Tilemap.TILED_JSON);
-        game.load.tilemap('back', 'Assets/background1.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('level3', 'Assets/ATAlevel3.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('bossLevel', 'Assets/ATAbossLevel.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('back1', 'Assets/background1.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('back2', 'Assets/background2.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('back3', 'Assets/background3.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('bossBack', 'Assets/background4.json', null, Phaser.Tilemap.TILED_JSON);
         game.load.image('tiles', 'Assets/AlanSpriteSheet.png');
         game.load.image('backgrounds', 'Assets/backgrounds.png')
 
