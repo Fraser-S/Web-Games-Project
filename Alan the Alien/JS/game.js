@@ -196,6 +196,8 @@ function create() {
 
 function update() {
 
+    console.log(player.position.x);
+
     //update the ai
     updateEnemies();
 
@@ -497,14 +499,13 @@ function checkHealth() {
         }else if(playingLevel4 == true){
             killPlayer(32,50);
         }
-
-
     }
-
 }
 
 //this function sets level 2 up so that the player can play it
 function level2() {
+    emptyEnemyArrays();
+
     layer.kill();
     backgroundLayer1.kill();
     layer2.resizeWorld();
@@ -528,10 +529,13 @@ function level2() {
     map2.setCollisionBetween(154,199);
     map2.setCollisionBetween(205,233);
 
+    //add the ai
+    snails.push(new Snail(game.add.sprite(960, 80,'snail'), "left"));
 }
 
 //this function sets level 3 up so that the player can play it
 function level3() {
+    emptyEnemyArrays();
     layer2.kill();
     backgroundLayer2.kill();
     layer3.resizeWorld();
@@ -563,6 +567,7 @@ function level3() {
 }
 
 function level4() {
+    emptyEnemyArrays();
     layer3.kill();
     backgroundLayer3.kill();
     layer4.resizeWorld();
@@ -585,7 +590,6 @@ function level4() {
     map4.setCollisionBetween(205,233);
 
 }
-
 
 function updateEnemies() {
     //update the snails
@@ -642,6 +646,27 @@ function updateEnemies() {
     //update the score
     scoreText.text = '' + score;
 }
+
+function emptyEnemyArrays(){
+    //remove the snails
+    for(var i = snails.length -1; i >= 0; i--){
+        snails[i].killSnail();//removes the sprite
+        snails.splice(i, 1);
+    }
+
+    //remove the turrets
+    for(var i = turrets.length -1; i >= 0; i--){
+        turrets[i].killTurret();//removes the sprite
+        turrets.splice(i, 1);
+    }
+
+    //remove the aiBullets
+    for(var i = aiBullets.length -1; i >= 0; i--){
+        aiBullets[i].killBullet();//removes the sprite
+        aiBullets.splice(i, 1);
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -709,7 +734,7 @@ function Snail(sprite, direction) {
     //add the variables
     this.sprite = sprite; //snail sprite
     this.direction = direction; //snail direction
-    this.oldDirection = direction; //oldDirection is used to flip the image
+    this.lastPosition = this.sprite.position.x; //lastPosition is used to change diurection when ai is hitting a wall
 
     this.state = "patrol"; //will be used for adding a random behaviour to it
     this.scoreVaulue = 50; //how much the enemy is worth when killed
@@ -762,12 +787,12 @@ Snail.prototype.update = function(){
     this.checkPlayerCollision();
 
     //move the snail
-    this.move();
+    this.move(false);
 
 };
 
 //snail is a basic enemy that does'nt react to the player
-Snail.prototype.move = function() {
+Snail.prototype.move = function(wallHit) {
 
     console.log(this.direction)
 
@@ -783,6 +808,16 @@ Snail.prototype.move = function() {
         this.alive = false;
         this.sprite.kill();
     }
+
+    if(this.onPlatform == true && this.sprite.position.x == this.lastPosition && wallHit == false)
+    {
+        this.changeDirection();
+        this.move(true);
+        this.lastPosition = this.sprite.position.x+1;
+    } else {
+        this.lastPosition = this.sprite.position.x;
+    }
+
 };
 
 Snail.prototype.changeDirection = function(){
@@ -877,6 +912,11 @@ Snail.prototype.checkPlayerCollision = function (){
         //no score if snail dies after touching player
         this.takeDamage();
     }//end if
+};
+
+Snail.prototype.killSnail = function() {
+    this.alive = false; //set to false
+    this.sprite.kill(); //kill the sprite
 };
 
 //end of Snail class
@@ -1093,12 +1133,17 @@ Turret.prototype.takeDamage = function() {
     this.health = this.health - 1;
     //if the turret has 0 or less health it's dead
     if(this.health <= 0){
-        this.alive = false; //set to false
-        this.sprite.kill(); //kill the sprite
+        this.killTurret();
         return this.scoreVaulue; //return the score value
     }
     return 0; //not killed, no score increase
 }
+
+Turret.prototype.killTurret = function() {
+    this.alive = false; //set to false
+    this.sprite.kill(); //kill the sprite
+};
+
 
 //end of Turret class
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1146,6 +1191,10 @@ DirectedBullet.prototype.checkCollision = function(){
         //kill the bullet
         this.killBullet();
     }
+
+    //check for off screen
+    if(this.sprite.position.x < 0 || this.sprite.position.u < 0 || this.sprite.position.x > game.world.width || this.sprite.position.y > game.world.height)
+        this.killBullet(); //off screen, kill bullet
 };
 
 //return true if the bullet is alive
