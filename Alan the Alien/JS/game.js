@@ -15,7 +15,6 @@ Game.prototype = {
 
 
 function preload(){
-
     game.load.spritesheet('player', 'Assets/Alan.png', 22, 21);
     game.load.image('exit', 'Assets/exit.png');
     game.load.image('bullet', 'Assets/Bullet.png');
@@ -29,9 +28,8 @@ function preload(){
     game.load.image('emptyHeart', 'Assets/emptyHeart.png');
     game.load.image('snail', 'Assets/snail.png');
     game.load.image('spikes', 'Assets/spikes.png');
-
+    game.load.image('turret', 'Assets/turret.png');
 }
-
 
 var player, bullets, jumpButton, leftButton, rightButton, pauseButton, magText, magTitle, reloadButton, shootButton, scoreTitle, alertText, pickups, scoreText, healthHud,
     healthHearts, heart1, heart2, heart3, healthkit, map, map2, map3, map4, backmap, backmap2, backmap3, backmap4, layer, layer2, layer3, layer4,
@@ -57,7 +55,6 @@ var playingLevel4 = false;
 var checkpoint1 = false;
 var checkpoint2 = false;
 var checkpoint3 = false;
-
 
 function create() {
 
@@ -86,7 +83,6 @@ function create() {
 
     backmap4 = game.add.tilemap('bossBack');
     backmap4.addTilesetImage('backgrounds', 'backgrounds');
-
 
     backgroundLayer4 = backmap4.createLayer('Background');
     layer4 = map4.createLayer('Foreground');
@@ -188,13 +184,11 @@ function create() {
 
     //create the snail array - gives more flexability to the AI than the group
      snails = [];
-     /* snails.push(new Snail(game.add.sprite(200, 500,'snail'), "left"));
-     snails.push(new Snail(game.add.sprite(500, 350,'snail'), "right"));
-     snails.push(new Snail(game.add.sprite(700, 500,'snail'), "left"));*/
+     snails.push(new Snail(game.add.sprite(1500, 40,'snail'), "left"));
 
     //add a turret
     turrets = [];
-    turrets.push(new Turret(game.add.sprite(1500, 40, 'snail'), 300));
+    turrets.push(new Turret(game.add.sprite(1500, 40, 'turret'), 300));
 
     aiBullets = [];
 }
@@ -289,10 +283,6 @@ function update() {
 
     });
 
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -381,8 +371,6 @@ function update() {
             killPlayer(777,400)
         }
     }
-
-
 }
 
 // function allows the player to shoot if they have bullets in their magazine. Will also play shooting sound and update the ammo count
@@ -603,14 +591,7 @@ function updateEnemies() {
     //update the snails
     for(var i = 0; i < snails.length; i++){
         //move the snail
-        snails[i].move();
-
-        //check collisions
-        score += snails[i].checkBulletCollision();
-
-        //check player collision
-        if(snails[i].isAlive() == true) snails[i].checkPlayerCollision();
-
+        snails[i].update();
     }//next snail
 
     //now that it is out of the loop remove the dead snails
@@ -665,7 +646,6 @@ function updateEnemies() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Functions used by multiple enemies
-
 
 //check to see if the player is in range with a sprite
 //not tied to a single Enemy so it can be reused
@@ -725,7 +705,7 @@ function collideWithGround(sprite) {
 //Snail class and functions
 
 //constructor and data storage
-function Snail(sprite, direction, speed) {
+function Snail(sprite, direction) {
     //add the variables
     this.sprite = sprite; //snail sprite
     this.direction = direction; //snail direction
@@ -736,7 +716,7 @@ function Snail(sprite, direction, speed) {
     this.health = 2; //health of the enemy
     this.alive = true; //true = alive, false = dead
     this.gravity = 100; //used to allow the snail to fall
-    this.oldDirection = direction;
+    this.onPlatform = false;
 
     //setup other values - physics stuff
     game.physics.arcade.enable(this.sprite);
@@ -770,38 +750,91 @@ Snail.prototype.takeDamage = function() {
     return 0; //not killed, no score increase
 }
 
+Snail.prototype.update = function(){
+
+    //check for collisions and if collided move
+    this.checkPlatformCollisions();
+
+    //check collision with bullets
+    this.checkBulletCollision();
+
+    //check collision with player
+    this.checkPlayerCollision();
+
+    //move the snail
+    this.move();
+
+};
+
 //snail is a basic enemy that does'nt react to the player
 Snail.prototype.move = function() {
-    var collided;//variable to hold if collision with platform happened
-    var i = -1;//ensure starts at 0
 
-    //loop finds the platform that the snail is on if on any
-    do{
-        i++;//increment i
-        collided = game.physics.arcade.collide(this.sprite, platforms.children[i]); //check for collision
-    } while(i < platforms.children.length && collided == false); //only exit when collision happened or no more platforms
+    console.log(this.direction)
 
-    //if direction is left move left
-    if(collided == true) {
-        if (this.direction == 'left') {
-            this.sprite.body.velocity.x = -30;
-
-        } else {
-            //else move right
-            this.sprite.body.velocity.x = 30;
-        }
-    }
-
-    //if the direction changes flip the image
-    if(this.direction != this.oldDirection) {
-        this.sprite.scale.x *= -1; //flip the image horizontally
-        this.oldDirection = this.direction; //set old direction to direction
+    if (this.direction == 'left') {
+        this.sprite.body.velocity.x = -30;
+    } else {
+        //else move right
+        this.sprite.body.velocity.x = 30;
     }
 
     //if snail goes off screen at the bottom kill it
-    if( this.sprite.position >= 600 ){
+    if( this.sprite.position.y >= 1500 ){
         this.alive = false;
-        this.sprite.Kill();
+        this.sprite.kill();
+    }
+};
+
+Snail.prototype.changeDirection = function(){
+    if (this.direction == 'left') {
+        this.direction = 'right';
+        this.sprite.scale.x *=  -1; //flip the image horizontally
+    } else {
+        //else move right
+        this.direction = 'left';
+        this.sprite.scale.x *= -1; //flip the image horizontally
+    }
+};
+
+Snail.prototype.checkPlatformCollisions = function(){
+    //used to store if collision happened or not
+    var collided = false;
+
+    if(playingLevel1 == true){
+        collided = game.physics.arcade.collide(this.sprite, layer); //check for collision
+        if(collided == true){
+            this.onPlatform = true;
+        }
+    } else {
+        //level 2
+        if (playingLevel2 == true) {
+            collided = game.physics.arcade.collide(this.sprite, layer2); //check for collision
+            if(collided == true){
+                this.onPlatform = true;
+            }
+        } else {
+            //level 3
+            if (playingLevel3 == true) {
+                collided = game.physics.arcade.collide(this.sprite, layer3); //check for collision
+                if(collided == true){
+                    this.onPlatform = true;
+                }
+            } else {
+                //level 4
+                if (playingLevel4 == true) {
+                    collided = game.physics.arcade.collide(this.sprite, layer4); //check for collision
+                    if(collided == true){
+                        this.onPlatform = true;
+                    }
+                } //end if level 4
+            } //end if level 3
+        } //end if level 2
+    }//end if level 1
+
+    //if on platform and no collision occurred turn around
+    if(this.onPlatform == true && collided == false)
+    {
+        this.changeDirection();
     }
 };
 
@@ -853,10 +886,10 @@ Snail.prototype.checkPlayerCollision = function (){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Turret Class
-function Turret(sprite, detectionRange)
-{
+function Turret(sprite, detectionRange) {
     //add the variables
     this.sprite = sprite; //turret sprite
+    this.sprite.scale.setTo(0.5,0.5);
     this.detectionRange = detectionRange; //the range that the turret will react to the player
     this.state = "idle"; //used to determine between active and inactive
     this.scoreVaulue = 100; //how much the enemy is worth when killed
@@ -1009,11 +1042,9 @@ Turret.prototype.fire = function() {
 
 //check the collision with the ground
 Turret.prototype.checkCollision = function(){
-    //level 1
     if(collideWithGround(this.sprite) == true){
         this.sprite.body.moves = false;
     }
-
 };
 
 //return true if the bullet is alive
