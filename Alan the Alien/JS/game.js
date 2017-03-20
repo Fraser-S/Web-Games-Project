@@ -667,7 +667,6 @@ function emptyEnemyArrays(){
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Functions used by multiple enemies
@@ -721,6 +720,36 @@ function collideWithGround(sprite) {
     return false;
 }
 
+//check to see if the sprite falls to the bottom of the map
+function checkHitBottomOfMap(sprite)
+{
+    //check for each level, return true if hit the bottom of the current level
+    if(playingLevel1 == true){
+        if(sprite.position.y >= 540) {
+            return true;
+        }
+    } else {
+        if (playingLevel2 == true) {
+            if(sprite.position.y >= 1659) {
+                return true;
+            }
+        } else {
+            if (playingLevel3 == true) {
+                if(sprite.position.y >= 690) {
+                    return true;
+                }
+            } else {
+                if (playingLevel4 == true) {
+                    if(sprite.position.y >= 777) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
 //end of Functions used by multiple enemies
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -742,7 +771,7 @@ function Snail(sprite, direction) {
     this.alive = true; //true = alive, false = dead
     this.gravity = 100; //used to allow the snail to fall
     this.onPlatform = false;
-
+    this.maximumDistanceToPlayer = 100; //used to decide when to fall
     //setup other values - physics stuff
     game.physics.arcade.enable(this.sprite);
     this.sprite.body.gravity.y = this.gravity;
@@ -794,8 +823,6 @@ Snail.prototype.update = function(){
 //snail is a basic enemy that does'nt react to the player
 Snail.prototype.move = function(wallHit) {
 
-    console.log(this.direction)
-
     if (this.direction == 'left') {
         this.sprite.body.velocity.x = -30;
     } else {
@@ -804,11 +831,11 @@ Snail.prototype.move = function(wallHit) {
     }
 
     //if snail goes off screen at the bottom kill it
-    if( this.sprite.position.y >= 1500 ){
-        this.alive = false;
-        this.sprite.kill();
+    if(checkHitBottomOfMap(this.sprite) == true) {
+        this.killSnail();
     }
 
+    //check if on platform and hasnt moved form last position. wallHit ensures that it does not keep looping round
     if(this.onPlatform == true && this.sprite.position.x == this.lastPosition && wallHit == false)
     {
         this.changeDirection();
@@ -869,7 +896,14 @@ Snail.prototype.checkPlatformCollisions = function(){
     //if on platform and no collision occurred turn around
     if(this.onPlatform == true && collided == false)
     {
-        this.changeDirection();
+        //check to see if the snail should fall
+        if(this.fallCheck() == true){
+            //no longer on platform
+            this.onPlatform = false;
+        } else {
+            //if the player is not in range, change direction
+            this.changeDirection();
+        }
     }
 };
 
@@ -917,6 +951,21 @@ Snail.prototype.checkPlayerCollision = function (){
 Snail.prototype.killSnail = function() {
     this.alive = false; //set to false
     this.sprite.kill(); //kill the sprite
+};
+
+//used to check if the snail should fall
+Snail.prototype.fallCheck = function(){
+    if(playerInRange(this.sprite, this.maximumDistanceToPlayer) == true) {
+        //check if the snail is below the snail
+        if (player.position.y > this.sprite.position.y) {
+            //check the position and direction
+            if ((player.position.x > this.sprite.position.x && this.direction == "right") || (player.position.x < this.sprite.position.x && this.direction == "left")) {
+                return true;//return true
+            } //final check position and direction
+        } //second check, height
+    }//first check, distance
+
+    return false;
 };
 
 //end of Snail class
@@ -1144,7 +1193,6 @@ Turret.prototype.killTurret = function() {
     this.sprite.kill(); //kill the sprite
 };
 
-
 //end of Turret class
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1193,8 +1241,9 @@ DirectedBullet.prototype.checkCollision = function(){
     }
 
     //check for off screen
-    if(this.sprite.position.x < 0 || this.sprite.position.u < 0 || this.sprite.position.x > game.world.width || this.sprite.position.y > game.world.height)
+    if(this.sprite.position.x < 0 || this.sprite.position.u < 0 || this.sprite.position.x > game.world.width || this.sprite.position.y > game.world.height){
         this.killBullet(); //off screen, kill bullet
+    }
 };
 
 //return true if the bullet is alive
