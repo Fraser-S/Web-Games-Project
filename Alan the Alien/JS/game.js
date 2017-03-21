@@ -1,7 +1,6 @@
 /**
  * Created by B00251398 on 21/02/2017.
  *
- * Last Modified by B00272851 on 03/03/2017
  */
 
 var Game = function(game) {};
@@ -12,7 +11,6 @@ Game.prototype = {
     update : update
 
 };
-
 
 function preload(){
     game.load.spritesheet('player', 'Assets/Alan.png', 22, 21);
@@ -123,7 +121,8 @@ function create() {
     spikes.body.gravity.setTo(0, 100);
 
     //player settings
-    player = game.add.sprite(1900, 50, 'player');
+    player = game.add.sprite(20, 420, 'player');
+
     game.physics.arcade.enable(player);
     player.body.bounce.setTo(0.2);
     player.body.gravity.setTo(0, 100);
@@ -180,19 +179,39 @@ function create() {
     magText.fixedToCamera = true;
     alertText.fixedToCamera = true;
 
-
-    //create the snail array - gives more flexability to the AI than the group
-     snails = [];
-     snails.push(new Snail(game.add.sprite(1500, 40,'snail'), "left"));
-
-    //add a turret
+    //create the enemy arrays
+    snails = [];
     turrets = [];
-    turrets.push(new Turret(game.add.sprite(1500, 40, 'turret'), 300));
+    setLevel1Enemies();
 
     aiBullets = [];
 }
 
+function setLevel1Enemies(){
+    //snails
+    snails.push(new Snail(game.add.sprite(200, 400,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(400, 150,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(480, 150,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(624, 294,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(845, 168,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1166, 64,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1507, 420,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1663, 336,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1593, 273,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1403, 168,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1506, 126,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1742, 62,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1940, 62,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(423, 399,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(37, 273,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(83, 149,'snail'), "right"));
+
+}
+
 function update() {
+
+    //output player position/ easier tyo place stuff
+    console.log("X: " + player.position.x + ",   Y: " + player.position.y);
 
     //update the ai
     updateEnemies();
@@ -599,7 +618,7 @@ function updateEnemies() {
     //update the snails
     for(var i = 0; i < snails.length; i++){
         //move the snail
-        snails[i].update();
+        score += snails[i].update();
     }//next snail
 
     //now that it is out of the loop remove the dead snails
@@ -725,8 +744,7 @@ function collideWithGround(sprite) {
 }
 
 //check to see if the sprite falls to the bottom of the map
-function checkHitBottomOfMap(sprite)
-{
+function checkHitBottomOfMap(sprite) {
     //check for each level, return true if hit the bottom of the current level
     if(playingLevel1 == true){
         if(sprite.position.y >= 540) {
@@ -809,12 +827,12 @@ Snail.prototype.takeDamage = function() {
 }
 
 Snail.prototype.update = function(){
-
+    score = 0;
     //check for collisions and if collided move
     this.checkPlatformCollisions();
 
     //check collision with bullets
-    this.checkBulletCollision();
+    score = this.checkBulletCollision();
 
     //check collision with player
     this.checkPlayerCollision();
@@ -822,6 +840,7 @@ Snail.prototype.update = function(){
     //move the snail
     this.move(false);
 
+    return score;
 };
 
 //snail is a basic enemy that does'nt react to the player
