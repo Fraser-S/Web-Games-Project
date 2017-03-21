@@ -7,9 +7,9 @@
 var Game = function(game) {};
 
 Game.prototype = {
-    preload :preload,
-    create :create,
-    update: update
+    preload : preload,
+    create : create,
+    update : update
 
 };
 
@@ -155,7 +155,6 @@ function create() {
     bullets.setAll('checkWorldBounds', true);
     bullets.setAll('outOfBoundsKill', true);
 
-
     //score text and title is displayed on screen
     scoreText = game.add.text(80, 30, '' + score, {fontSize: '15px', fill: '#FF0000'});
     scoreTitle = game.add.sprite(0, 25, "scoreTitle");
@@ -193,106 +192,64 @@ function create() {
     aiBullets = [];
 }
 
-
 function update() {
-
-    console.log(player.position.x);
 
     //update the ai
     updateEnemies();
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //all collision code is detailed in this section of code
-    //level 1 specific code
-    game.physics.arcade.collide(player, layer);
-    game.physics.arcade.collide(healthkit, layer);
-    game.physics.arcade.collide(pickups, layer);
-    game.physics.arcade.collide(exit1, layer);
+    //check collisions
+    checkCollisions();
 
-    game.physics.arcade.collide(bullets, layer, function (bullets) {
-
-        bullets.kill();
-    });
-
-    game.physics.arcade.overlap(player, exit1, function () {
-        exit1.kill();
-        level2();
-    });
-
-    //level 2 specific code////////////////////////////////////////////////////////////////////
-    game.physics.arcade.collide(player, layer2);
-    game.physics.arcade.collide(healthkit, layer2);
-    game.physics.arcade.collide(pickups, layer2);
-    game.physics.arcade.collide(exit2, layer2);
-    game.physics.arcade.collide(spikes, layer2);
-
-    game.physics.arcade.collide(bullets, layer2, function (bullets) {
-
-        bullets.kill();
-    });
-
-    game.physics.arcade.overlap(player, exit2, function () {
-        exit2.kill();
-        level3();
-    });
-
-
-
-    //Level 3///////////////////////////////////////////////////////////////////////////////////
-    game.physics.arcade.collide(player, layer3);
-    game.physics.arcade.collide(healthkit, layer3);
-    game.physics.arcade.collide(pickups, layer3);
-    game.physics.arcade.collide(spikes, layer3);
-    game.physics.arcade.collide(exit3, layer3);
-
-    game.physics.arcade.collide(bullets, layer3, function (bullets) {
-
-        bullets.kill();
-    });
-
-    game.physics.arcade.overlap(player, exit3, function () {
-        exit3.kill();
-        level4();
-    });
-
-    //Boss level/////////////////////////////////////////////////////////////////////////////////////
-    game.physics.arcade.collide(player, layer4);
-
-    game.physics.arcade.collide(bullets, layer4, function (bullets) {
-
-        bullets.kill();
-    });
-
-
-    //general collision code///////////////////////////////////////////////////////////////////////////////
-    game.physics.arcade.overlap(player, pickups, function (player, pickup) {
-
-        pickup.kill();
-        score += 100;
-        scoreText.text = '' + score;
-
-    });
-
-    game.physics.arcade.overlap(player, healthkit, function (player, healthkit) {
-
-        healthkit.kill();
-        if(health < 40){
-            health += 20;
-        }else{
-            health = 60;
-        }
-
-    });
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //reset the players velocity to zero so that one key press doesn't move the player constantly in the direction pressed
-    player.body.velocity.x = 0;
-    // updateEnemies();
     //checks if the player has enough health to live
     checkHealth();
+
+    //player controls
+    playerControl();
+
+    //kills the player if the fall off the bottom of the map this code is specific to each level
+    if(playingLevel1 == true){
+        if(player.x > 1000){
+            checkpoint1 = true;
+        }
+        if (player.y > 540 && checkpoint1 == false){
+            killPlayer(32,400);
+        }else {
+            if (player.y > 540 && checkpoint1 == true){
+                killPlayer(1000,400)
+            }
+        }
+    }
+    else if (playingLevel2 == true){
+
+        if(player.x > 1659 && player.y> 735){
+            checkpoint2 = true;
+        }
+
+
+        if(player.y> 960 && checkpoint2 == false){
+            killPlayer(32,50)
+        }else if (player.y > 960 && checkpoint2 == true){
+            killPlayer(1660,700)
+        }
+    }
+    if(playingLevel3 == true){
+
+        if(player.x > 777){
+            checkpoint3 = true;
+        }
+
+        if (player.y > 540 && checkpoint3 == false){
+            killPlayer(32,32);
+        }else if (player.y > 540 && checkpoint3 == true){
+            killPlayer(777,400)
+        }
+    }
+}
+
+//player controls
+function playerControl(){
+    //reset the players velocity to zero so that one key press doesn't move the player constantly in the direction pressed
+    player.body.velocity.x = 0;
 
     // calls reload function when r is pressed
     reloadButton.onDown.add(reloadBreak, this);
@@ -322,7 +279,7 @@ function update() {
 
 
     // allows the player to shoot by calling the fire function when the player presses the spacebar
-    //depending on where the player is facing a diiferent variable will be passed through to change where the bullet is fire to
+    //depending on where the player is facing a different variable will be passed through to change where the bullet is fire to
     if (shootButton.isDown && aimRight == true)
     {
         playerFires(shootRight);
@@ -332,47 +289,94 @@ function update() {
 
         playerFires(shootLeft)
     }
+}
 
-    //kills the player if the fall off the bottom of the map this code is specific to each level
-    if(playingLevel1 == true){
+// function that checks the
+function checkCollisions(){
+    //all collision code is detailed in this section of code //performs a prior check before hand to prevent unnessisery checks
+    //level 1 specific code
+    if(playingLevel1 == true) {
+        game.physics.arcade.collide(player, layer);
+        game.physics.arcade.collide(healthkit, layer);
+        game.physics.arcade.collide(pickups, layer);
+        game.physics.arcade.collide(exit1, layer);
 
-        if(player.x > 1000){
-            checkpoint1 = true;
-        }
+        game.physics.arcade.collide(bullets, layer, function (bullets) {
+            bullets.kill();
+        });
 
-        if (player.y > 540 && checkpoint1 == false){
-            killPlayer(32,400);
-        }else if (player.y > 540 && checkpoint1 == true){
-            killPlayer(1000,400)
-        }
+        game.physics.arcade.overlap(player, exit1, function () {
+            exit1.kill();
+            level2();
+        });
     }
 
-    else if (playingLevel2 == true){
+    //level 2 specific code////////////////////////////////////////////////////////////////////
+    if(playingLevel2 == true) {
+        game.physics.arcade.collide(player, layer2);
+        game.physics.arcade.collide(healthkit, layer2);
+        game.physics.arcade.collide(pickups, layer2);
+        game.physics.arcade.collide(exit2, layer2);
+        game.physics.arcade.collide(spikes, layer2);
 
-        if(player.x > 1659 && player.y> 735){
-            checkpoint2 = true;
-        }
+        game.physics.arcade.collide(bullets, layer2, function (bullets) {
 
+            bullets.kill();
+        });
 
-        if(player.y> 960 && checkpoint2 == false){
-            killPlayer(32,50)
-        }else if (player.y > 960 && checkpoint2 == true){
-            killPlayer(1660,700)
-        }
+        game.physics.arcade.overlap(player, exit2, function () {
+            exit2.kill();
+            level3();
+        });
     }
 
-    if(playingLevel3 == true){
+    //Level 3///////////////////////////////////////////////////////////////////////////////////
+    if(playingLevel3 == true) {
+        game.physics.arcade.collide(player, layer3);
+        game.physics.arcade.collide(healthkit, layer3);
+        game.physics.arcade.collide(pickups, layer3);
+        game.physics.arcade.collide(spikes, layer3);
+        game.physics.arcade.collide(exit3, layer3);
 
-        if(player.x > 777){
-            checkpoint3 = true;
-        }
+        game.physics.arcade.collide(bullets, layer3, function (bullets) {
 
-        if (player.y > 540 && checkpoint3 == false){
-            killPlayer(32,32);
-        }else if (player.y > 540 && checkpoint3 == true){
-            killPlayer(777,400)
-        }
+            bullets.kill();
+        });
+
+        game.physics.arcade.overlap(player, exit3, function () {
+            exit3.kill();
+            level4();
+        });
     }
+
+    //Boss level/////////////////////////////////////////////////////////////////////////////////////
+    if(playingLevel4 == true) {
+        game.physics.arcade.collide(player, layer4);
+
+        game.physics.arcade.collide(bullets, layer4, function (bullets) {
+
+            bullets.kill();
+        });
+    }
+
+    //general collision code///////////////////////////////////////////////////////////////////////////////
+    game.physics.arcade.overlap(player, pickups, function (player, pickup) {
+
+        pickup.kill();
+        score += 100;
+        scoreText.text = '' + score;
+
+    });
+
+    game.physics.arcade.overlap(player, healthkit, function (player, healthkit) {
+
+        healthkit.kill();
+        if(health < 40){
+            health += 20;
+        }else{
+            health = 60;
+        }
+    });
 }
 
 // function allows the player to shoot if they have bullets in their magazine. Will also play shooting sound and update the ammo count
