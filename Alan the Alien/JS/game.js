@@ -70,8 +70,7 @@ function create() {
     map4 = game.add.tilemap('bossLevel');
     map4.addTilesetImage('AlanSpriteSheet', 'tiles');
 
-    backmap = game.add.tilemap('back1');
-    backmap.addTilesetImage('backgrounds', 'backgrounds');
+
 
     backmap2 = game.add.tilemap('back2');
     backmap2.addTilesetImage('backgrounds', 'backgrounds');
@@ -82,13 +81,16 @@ function create() {
     backmap4 = game.add.tilemap('bossBack');
     backmap4.addTilesetImage('backgrounds', 'backgrounds');
 
+    backmap = game.add.tilemap('back1');
+    backmap.addTilesetImage('backgrounds', 'backgrounds');
+    backgroundLayer1 = backmap.createLayer('Background');
     backgroundLayer4 = backmap4.createLayer('Background');
+
     layer4 = map4.createLayer('Foreground');
     backgroundLayer3 = backmap3.createLayer('Background');
     layer3 = map3.createLayer('Foreground');
     backgroundLayer2 = backmap2.createLayer('Background');
     layer2 = map2.createLayer('Foreground');
-    backgroundLayer1 = backmap.createLayer('Background');
     layer = map.createLayer('Foreground');
     layer.resizeWorld();
 
