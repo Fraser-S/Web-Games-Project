@@ -185,6 +185,8 @@ function create() {
     aiBullets = [];
 }
 
+
+//set the enemies for level 1, no turrets
 function setLevel1Enemies(){
     //snails
     snails.push(new Snail(game.add.sprite(200, 400,'snail'), "left"));
@@ -203,7 +205,6 @@ function setLevel1Enemies(){
     snails.push(new Snail(game.add.sprite(423, 399,'snail'), "left"));
     snails.push(new Snail(game.add.sprite(37, 273,'snail'), "left"));
     snails.push(new Snail(game.add.sprite(83, 149,'snail'), "right"));
-
 }
 
 function update() {
@@ -531,6 +532,7 @@ function level2() {
     backgroundLayer2 = backmap2.createLayer('Background');
     layer2 = map2.createLayer('Foreground');
     layer2.resizeWorld();
+
     player.destroy();
     healthkit.destroy();
     pickups.destroy();
@@ -538,6 +540,7 @@ function level2() {
     playingLevel1 = false;
     playingLevel2 = true;
     playingLevel3 = false;
+
 
     exit2 = game.add.sprite(12, 350, 'exit');
     game.physics.arcade.enable(exit2);
@@ -549,11 +552,36 @@ function level2() {
 
     setLevel(60, 32, 1600, 400, 700, 400, 1000,700,200,1000)
 
+    //add the ai
+    spawnLevel2AI();
+}
 
-
-
+//spawn the ai for the second level
+function spawnLevel2AI(){
     //add the ai
     snails.push(new Snail(game.add.sprite(960, 80,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(668, 441,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(204, 420,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(308, 924,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(562, 735,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(833, 609,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1019, 756,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1655, 735,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1040, 483,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(305, 189,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(460, 231,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(653, 105,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1301, 294,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1351, 294,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1094, 294,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1202, 189,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1262, 126,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1443, 62,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1772, 231,'snail'), "right"));
+    //turrets
+    turrets.push(new Turret(game.add.sprite(42, 609,'turret'), 350));
+    turrets.push(new Turret(game.add.sprite(759, 567,'turret'), 350));
+    turrets.push(new Turret(game.add.sprite(2005, 231,'turret'), 350));
 }
 
 //this function sets level 3 up so that the player can play it
@@ -564,9 +592,11 @@ function level3() {
     backgroundLayer3 = backmap3.createLayer('Background');
     layer3 = map3.createLayer('Foreground');
     layer3.resizeWorld();
+
     player.destroy();
     healthkit.destroy();
     pickups.destroy();
+
 
     playingLevel1 = false;
     playingLevel2 = false;
@@ -582,9 +612,50 @@ function level3() {
 
     setLevel(32, 50, 1300, 50, 75, 150, 600,30,1000,50);
 
-
-
+    spawnLevel3AI();
 }
+
+//spawn the ai for the second level
+function spawnLevel3AI(){
+    //snails
+    snails.push(new Snail(game.add.sprite(1911, 63,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1618, 42,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1438, 42,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1283, 63,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1128, 42,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(931, 42,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1734, 189,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1729, 357,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1389, 483,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1485, 483,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1489, 420,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1320, 420,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1339, 357,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1453, 357,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1379, 231,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1339, 168,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1233, 168,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1224, 231,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1227, 231,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1124, 294,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1124, 294,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1047, 357,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(867, 399,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(1022, 420,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1179, 420,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(939, 483,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(1217, 483,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(60, 399,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(0, 210,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(627, 89,'snail'), "right"));
+    snails.push(new Snail(game.add.sprite(631, 231,'snail'), "left"));
+    snails.push(new Snail(game.add.sprite(641, 378,'snail'), "left"));
+
+    //turrets
+    turrets.push(new Turret(game.add.sprite(872, 126,'turret'), 350));
+    turrets.push(new Turret(game.add.sprite(1673, 126,'turret'), 350));
+}
+
 
 function level4() {
     emptyEnemyArrays();
@@ -614,11 +685,6 @@ function level4() {
     setLevel(32, 50, 1000, 50, 300, 200, 600,200,900,200);
 
 };
-
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function updateEnemies() {
@@ -759,17 +825,17 @@ function checkHitBottomOfMap(sprite) {
         }
     } else {
         if (playingLevel2 == true) {
-            if(sprite.position.y >= 1659) {
+            if(sprite.position.y >= 961) {
                 return true;
             }
         } else {
             if (playingLevel3 == true) {
-                if(sprite.position.y >= 690) {
+                if(sprite.position.y >= 545) {
                     return true;
                 }
             } else {
                 if (playingLevel4 == true) {
-                    if(sprite.position.y >= 777) {
+                    if(sprite.position.y >= 540) {
                         return true;
                     }
                 }
@@ -1015,14 +1081,14 @@ function Turret(sprite, detectionRange) {
     this.health = 5; //health of the enemy
     this.alive = true; //true = alive, false = dead
     this.gravity = 300; //used to allow the turret to fall //ensures that it is on the ground
-    this.timeBetweenShot = 500;//100ms between shots
+    this.timeBetweenShot = 1200;//1.2s between shots
     this.lastFired = 0;
 
     //used for the turrets special attacks
     this.specialAttackActive = false; //stores if the special attack is active
     this.minimumTimeBetweenSpecials = 5000;
     this.timeSpecialEnded = 0; //used to store when the last special ended
-    this.specialAttackAttackSpeed = 250; //faster firing when special attack enabled
+    this.specialAttackAttackSpeed = this.timeBetweenShot/2; //faster firing when special attack enabled
     this.maxShots = 10; //max shots of the special attack
     this.shotsFired = 0; //number of shots fired
     this.shotStep = 180 / this.maxShots; //angle to increase by for the next shot
