@@ -25,7 +25,6 @@ function preload(){
     game.load.image('halfHeart', 'Assets/halfHeart.png');
     game.load.image('emptyHeart', 'Assets/emptyHeart.png');
     game.load.image('snail', 'Assets/snail.png');
-    game.load.image('spikes', 'Assets/spikes.png');
     game.load.image('turret', 'Assets/turret.png');
 }
 
@@ -54,77 +53,12 @@ var checkpoint1 = false;
 var checkpoint2 = false;
 var checkpoint3 = false;
 
-function create() {
-
-    game.stage.backgroundColor = "#000000";
-
-    map = game.add.tilemap('level1');
-    map.addTilesetImage('AlanSpriteSheet', 'tiles');
-
-    map2 = game.add.tilemap('level2');
-    map2.addTilesetImage('AlanSpriteSheet', 'tiles');
-
-    map3 = game.add.tilemap('level3');
-    map3.addTilesetImage('AlanSpriteSheet', 'tiles');
-
-    map4 = game.add.tilemap('bossLevel');
-    map4.addTilesetImage('AlanSpriteSheet', 'tiles');
 
 
 
-    backmap2 = game.add.tilemap('back2');
-    backmap2.addTilesetImage('backgrounds', 'backgrounds');
+function setLevel(playerx, playery, healthkitx, healthkity, pickup1x, pickup1y, pickup2x,pickup2y,pickup3x,pickup3y){
 
-    backmap3 = game.add.tilemap('back3');
-    backmap3.addTilesetImage('backgrounds', 'backgrounds');
-
-    backmap4 = game.add.tilemap('bossBack');
-    backmap4.addTilesetImage('backgrounds', 'backgrounds');
-
-    backmap = game.add.tilemap('back1');
-    backmap.addTilesetImage('backgrounds', 'backgrounds');
-    backgroundLayer1 = backmap.createLayer('Background');
-    backgroundLayer4 = backmap4.createLayer('Background');
-
-    layer4 = map4.createLayer('Foreground');
-    backgroundLayer3 = backmap3.createLayer('Background');
-    layer3 = map3.createLayer('Foreground');
-    backgroundLayer2 = backmap2.createLayer('Background');
-    layer2 = map2.createLayer('Foreground');
-    layer = map.createLayer('Foreground');
-    layer.resizeWorld();
-
-    map.setCollisionBetween(0,150);
-    map.setCollisionBetween(154,199);
-    map.setCollisionBetween(205,233);
-
-    //physics system is enabled and the player is created anf given attributes such as gravity and bounce
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-
-    pickups = game.add.group();
-    pickups.enableBody = true;
-    var pickup1 = pickups.create(85, 0,'pickup');
-    pickup1.body.gravity.y = 100;
-    pickup1.body.bounce.y = 0.3
-    var pickup2 = pickups.create(500, 0,'pickup');
-    pickup2.body.gravity.y = 100;
-    pickup2.body.bounce.y = 0.3
-    var pickup3 = pickups.create(1900, 200,'pickup');
-    pickup3.body.gravity.y = 100;
-    pickup3.body.bounce.y = 0.3
-
-    healthkit = game.add.sprite(400, 32, 'fullHeart');
-    game.physics.arcade.enable(healthkit);
-    healthkit.enableBody = true;
-    healthkit.body.gravity.y = 100;
-
-    spikes = game.add.sprite(987, 300, 'spikes');
-    game.physics.arcade.enable(spikes);
-    spikes.body.gravity.setTo(0, 100);
-
-    //player settings
-    player = game.add.sprite(20, 420, 'player');
-
+    player = game.add.sprite(playerx, playery, 'player');
     game.physics.arcade.enable(player);
     player.body.bounce.setTo(0.2);
     player.body.gravity.setTo(0, 100);
@@ -132,20 +66,26 @@ function create() {
     //makes the camera follow the player
     game.camera.follow(player);
 
-    exit1 = game.add.sprite(2050, 32, 'exit');
-    game.physics.arcade.enable(exit1);
-    exit1.body.gravity.setTo(0, 100);
-
     player.animations.add('right', [0, 1], 10, true);
     player.animations.add('left', [3, 4], 10, true);
 
-    // player input
-    jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
-    leftButton = game.input.keyboard.addKey(Phaser.Keyboard.A);
-    rightButton = game.input.keyboard.addKey(Phaser.Keyboard.D);
-    shootButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-    pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
-    reloadButton = game.input.keyboard.addKey(Phaser.Keyboard.R);
+    healthkit = game.add.sprite(healthkitx, healthkity, 'fullHeart');
+    game.physics.arcade.enable(healthkit);
+    healthkit.enableBody = true;
+    healthkit.body.gravity.y = 100;
+
+    pickups = game.add.group();
+    pickups.enableBody = true;
+    var pickup1 = pickups.create(pickup1x, pickup1y,'pickup');
+    pickup1.body.gravity.y = 100;
+    pickup1.body.bounce.y = 0.3
+    var pickup2 = pickups.create(pickup2x, pickup2y,'pickup');
+    pickup2.body.gravity.y = 100;
+    pickup2.body.bounce.y = 0.3
+    var pickup3 = pickups.create(pickup3x, pickup3y,'pickup');
+    pickup3.body.gravity.y = 100;
+    pickup3.body.bounce.y = 0.3;
+
 
     // create bullet group for the player to shoot with
     bullets = game.add.group();
@@ -180,6 +120,62 @@ function create() {
     magTitle.fixedToCamera = true;
     magText.fixedToCamera = true;
     alertText.fixedToCamera = true;
+
+}
+
+
+function create() {
+
+    game.stage.backgroundColor = "#000000";
+
+    map = game.add.tilemap('level1');
+    map.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    map2 = game.add.tilemap('level2');
+    map2.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    map3 = game.add.tilemap('level3');
+    map3.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    map4 = game.add.tilemap('bossLevel');
+    map4.addTilesetImage('AlanSpriteSheet', 'tiles');
+
+    backmap2 = game.add.tilemap('back2');
+    backmap2.addTilesetImage('backgrounds', 'backgrounds');
+
+    backmap3 = game.add.tilemap('back3');
+    backmap3.addTilesetImage('backgrounds', 'backgrounds');
+
+    backmap4 = game.add.tilemap('bossBack');
+    backmap4.addTilesetImage('backgrounds', 'backgrounds');
+
+    backmap = game.add.tilemap('back1');
+    backmap.addTilesetImage('backgrounds', 'backgrounds');
+
+    backgroundLayer1 = backmap.createLayer('Background');
+    layer = map.createLayer('Foreground');
+    layer.resizeWorld();
+
+    map.setCollisionBetween(0,150);
+    map.setCollisionBetween(154,199);
+    map.setCollisionBetween(205,233);
+
+    setLevel(32, 350, 400, 32, 85, 0, 500,0,1900,200);
+
+
+    exit1 = game.add.sprite(2050, 32, 'exit');
+    game.physics.arcade.enable(exit1);
+    exit1.body.gravity.setTo(0, 100);
+
+
+    // player input
+    jumpButton = game.input.keyboard.addKey(Phaser.Keyboard.W);
+    leftButton = game.input.keyboard.addKey(Phaser.Keyboard.A);
+    rightButton = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    shootButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+    pauseButton = game.input.keyboard.addKey(Phaser.Keyboard.P);
+    reloadButton = game.input.keyboard.addKey(Phaser.Keyboard.R);
+
 
     //create the enemy arrays
     snails = [];
@@ -338,7 +334,7 @@ function checkCollisions(){
         game.physics.arcade.collide(healthkit, layer2);
         game.physics.arcade.collide(pickups, layer2);
         game.physics.arcade.collide(exit2, layer2);
-        game.physics.arcade.collide(spikes, layer2);
+
 
         game.physics.arcade.collide(bullets, layer2, function (bullets) {
 
@@ -356,7 +352,6 @@ function checkCollisions(){
         game.physics.arcade.collide(player, layer3);
         game.physics.arcade.collide(healthkit, layer3);
         game.physics.arcade.collide(pickups, layer3);
-        game.physics.arcade.collide(spikes, layer3);
         game.physics.arcade.collide(exit3, layer3);
 
         game.physics.arcade.collide(bullets, layer3, function (bullets) {
@@ -373,7 +368,7 @@ function checkCollisions(){
     //Boss level/////////////////////////////////////////////////////////////////////////////////////
     if(playingLevel4 == true) {
         game.physics.arcade.collide(player, layer4);
-
+        game.physics.arcade.collide(pickups, layer4);
         game.physics.arcade.collide(bullets, layer4, function (bullets) {
 
             bullets.kill();
@@ -533,18 +528,16 @@ function level2() {
 
     layer.kill();
     backgroundLayer1.kill();
+    backgroundLayer2 = backmap2.createLayer('Background');
+    layer2 = map2.createLayer('Foreground');
     layer2.resizeWorld();
-    player.reset(60,350);
-    healthkit.reset(1600,400);
+    player.destroy();
+    healthkit.destroy();
+    pickups.destroy();
+
     playingLevel1 = false;
     playingLevel2 = true;
     playingLevel3 = false;
-    pickups.destroy();
-    pickups = game.add.group();
-    pickups.enableBody = true;
-    var pickup1 = pickups.create(700, 400,'pickup');
-    pickup1.body.gravity.y = 100;
-    pickup1.body.bounce.y = 0.3
 
     exit2 = game.add.sprite(12, 350, 'exit');
     game.physics.arcade.enable(exit2);
@@ -553,6 +546,11 @@ function level2() {
     map2.setCollisionBetween(0,150);
     map2.setCollisionBetween(154,199);
     map2.setCollisionBetween(205,233);
+
+    setLevel(60, 32, 1600, 400, 700, 400, 1000,700,200,1000)
+
+
+
 
     //add the ai
     snails.push(new Snail(game.add.sprite(960, 80,'snail'), "left"));
@@ -563,23 +561,16 @@ function level3() {
     emptyEnemyArrays();
     layer2.kill();
     backgroundLayer2.kill();
+    backgroundLayer3 = backmap3.createLayer('Background');
+    layer3 = map3.createLayer('Foreground');
     layer3.resizeWorld();
-
-    player.reset(1900,50);
-
-    healthkit.reset(1000,50);
+    player.destroy();
+    healthkit.destroy();
+    pickups.destroy();
 
     playingLevel1 = false;
     playingLevel2 = false;
     playingLevel3 = true;
-
-    pickups.destroy();
-    pickups = game.add.group();
-    pickups.enableBody = true;
-
-    var pickup1 = pickups.create(75, 150,'pickup');
-    pickup1.body.gravity.y = 100;
-    pickup1.body.bounce.y = 0.3
 
     exit3 = game.add.sprite(2000, 450, 'exit');
     game.physics.arcade.enable(exit3);
@@ -589,12 +580,18 @@ function level3() {
     map3.setCollisionBetween(154,199);
     map3.setCollisionBetween(205,233);
 
+    setLevel(32, 50, 1300, 50, 75, 150, 600,30,1000,50);
+
+
+
 }
 
 function level4() {
     emptyEnemyArrays();
     layer3.kill();
     backgroundLayer3.kill();
+    backgroundLayer4 = backmap4.createLayer('Background');
+    layer4 = map4.createLayer('Foreground');
     layer4.resizeWorld();
 
     player.reset(32,50);
@@ -614,8 +611,16 @@ function level4() {
     map4.setCollisionBetween(154,199);
     map4.setCollisionBetween(205,233);
 
-}
+    setLevel(32, 50, 1000, 50, 300, 200, 600,200,900,200);
 
+};
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 function updateEnemies() {
     //update the snails
     for(var i = 0; i < snails.length; i++){
